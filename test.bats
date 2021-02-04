@@ -10,7 +10,6 @@ setup() {
 }
 
 teardown() {
-  make clean
   mv "$HOME/.netrc-bak" "$HOME/.netrc"
 }
 
