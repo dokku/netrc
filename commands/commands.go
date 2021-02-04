@@ -45,5 +45,8 @@ func SubCommands(meta command.Meta) map[string]cli.CommandFactory {
 		"unset": func() (cli.Command, error) {
 			return &UnsetCommand{Meta: meta}, nil
 		},
+		"version": func() (cli.Command, error) {
+			return &VersionCommand{Meta: meta}, nil
+		},
 	}
 }
