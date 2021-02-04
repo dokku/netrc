@@ -60,7 +60,8 @@ func RunCustom(args []string) int {
 	}
 
 	os.Setenv("CLI_APP_NAME", meta.AppName)
-	c := cli.NewCLI(meta.AppName, "0.0.1")
+	os.Setenv("CLI_VERSION", meta.Version)
+	c := cli.NewCLI(meta.AppName, meta.Version)
 	c.Args = os.Args[1:]
 	c.Commands = commands.Commands(metaPtr, agentUi)
 
