@@ -112,7 +112,7 @@ func (c *GetCommand) Run(args []string) int {
 
 	login := machine.Get("login")
 	password := machine.Get("password")
-	fmt.Printf("%s:%s\n", login, password)
+	c.Ui.Output(fmt.Sprintf("%s:%s", login, password))
 
 	return 0
 }
