@@ -14,6 +14,8 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
+var Version string
+
 func main() {
 	os.Exit(Run(os.Args[1:]))
 }
@@ -60,8 +62,8 @@ func RunCustom(args []string) int {
 	}
 
 	os.Setenv("CLI_APP_NAME", meta.AppName)
-	os.Setenv("CLI_VERSION", meta.Version)
-	c := cli.NewCLI(meta.AppName, meta.Version)
+	os.Setenv("CLI_VERSION", Version)
+	c := cli.NewCLI(meta.AppName, Version)
 	c.Args = os.Args[1:]
 	c.Commands = commands.Commands(metaPtr, agentUi)
 
