@@ -1,0 +1,3 @@
+FROM scratch
+COPY ./build/linux/bats-retry /bats-retry
+ENTRYPOINT ["/bats-retry"]
