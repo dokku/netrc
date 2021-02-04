@@ -7,16 +7,14 @@ jobs:
       - checkout
       - run:
           command: |
+            export CI_BRANCH=$CIRCLE_BRANCH
             make version
-            if [[ "$CIRCLE_BRANCH" == "release" ]]; then
-              make .env.docker
-            fi
-      - run: make circleci
+      - run: make ci-report
       - run: make build-docker-image
       - run:
           command: |
             make build-in-docker
-            [[ -d build ]]  && sudo chown -R circleci:circleci build
+            [[ -d build ]] && sudo chown -R circleci:circleci build
       - run: make validate-in-docker
       - store_artifacts:
           path: build

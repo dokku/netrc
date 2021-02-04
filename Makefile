@@ -8,7 +8,7 @@ SYSTEM_NAME  = $(shell uname -s | tr '[:upper:]' '[:lower:]')
 BASE_VERSION ?= 0.2.1
 IMAGE_NAME ?= $(MAINTAINER)/$(REPOSITORY)
 
-ifeq ($(CIRCLE_BRANCH),release)
+ifeq ($(CI_BRANCH),release)
 	VERSION ?= $(BASE_VERSION)
 	DOCKER_IMAGE_VERSION = $(VERSION)
 else
@@ -17,7 +17,7 @@ else
 endif
 
 version:
-	@echo "$(CIRCLE_BRANCH)"
+	@echo "$(CI_BRANCH)"
 	@echo "$(VERSION)"
 
 define PACKAGE_DESCRIPTION
@@ -32,7 +32,7 @@ targets = $(addsuffix -in-docker, $(LIST))
 .env.docker:
 	@rm -f .env.docker
 	@touch .env.docker
-	@echo "CIRCLE_BRANCH=$(CIRCLE_BRANCH)" >> .env.docker
+	@echo "CI_BRANCH=$(CI_BRANCH)" >> .env.docker
 	@echo "GITHUB_ACCESS_TOKEN=$(GITHUB_ACCESS_TOKEN)" >> .env.docker
 	@echo "IMAGE_NAME=$(IMAGE_NAME)" >> .env.docker
 	@echo "VERSION=$(VERSION)" >> .env.docker
@@ -69,7 +69,7 @@ build/linux/$(NAME):
 clean:
 	rm -rf build release validation
 
-circleci:
+ci-report:
 	docker version
 	rm -f ~/.gitconfig
 
