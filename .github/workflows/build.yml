@@ -13,8 +13,6 @@ jobs:
   build:
     name: build
     runs-on: ubuntu-16.04
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
     strategy:
       fail-fast: true
 
@@ -33,17 +31,15 @@ jobs:
     - run: make validate-in-docker
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
     - name: upload packages
       uses: actions/upload-artifact@v2
       with:
         name: build
         path: build/**/*
-
     - name: make release-in-docker
       run: |
         if [[ "${GITHUB_REF#refs/heads/}" == "release" ]]; then
-          make release-in-docker
+          make release-in-docker release-packagecloud-in-docker
         fi
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}

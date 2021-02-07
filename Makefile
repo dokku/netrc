@@ -162,5 +162,4 @@ validate:
 	sha1sum build/rpm/$(NAME)-$(VERSION)-1.x86_64.rpm
 	bats test.bats
 
-prebuild:
-	true
+prebuild: build-docker-image
