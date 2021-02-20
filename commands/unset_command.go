@@ -1,17 +1,15 @@
 package commands
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"os/user"
 	"path/filepath"
-	"strings"
-
-	"netrc/command"
 
 	"github.com/jdxcode/netrc"
+	"github.com/josegonzalez/cli-skeleton/command"
 	"github.com/posener/complete"
+	"github.com/spf13/pflag"
 )
 
 type UnsetCommand struct {
@@ -19,20 +17,7 @@ type UnsetCommand struct {
 }
 
 func (c *UnsetCommand) Help() string {
-	appName := os.Getenv("CLI_APP_NAME")
-	helpText := `
-Usage: ` + appName + ` ` + c.Name() + ` ` + command.FlagString(c.FlagSet()) + ` ` + command.ArgumentAsString(c.Arguments()) + `
-
-  ` + c.Synopsis() + `
-
-General Options:
-  ` + command.GeneralOptionsUsage() + `
-
-Example:
-
-` + command.ExampleString(c.Examples())
-
-	return strings.TrimSpace(helpText)
+	return command.CommandHelp(c)
 }
 
 func (c *UnsetCommand) Arguments() []command.Argument {
@@ -63,7 +48,7 @@ func (c *UnsetCommand) Examples() map[string]string {
 	}
 }
 
-func (c *UnsetCommand) FlagSet() *flag.FlagSet {
+func (c *UnsetCommand) FlagSet() *pflag.FlagSet {
 	return c.Meta.FlagSet(c.Name(), command.FlagSetClient)
 }
 
