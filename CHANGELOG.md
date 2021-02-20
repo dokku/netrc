@@ -1,3 +1,9 @@
+## [0.2.2](https://github.com/dokku/go-netrc/compare/v0.2.1...v0.2.2) - 2021-02-20
+
+### Fixes
+
+- @josegonzalez Set CI_BRANCH correctly for release process
+
 ## [0.2.1](https://github.com/dokku/go-netrc/compare/v0.2.0...v0.2.1) - 2021-02-20
 
 ### Changes
