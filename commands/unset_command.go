@@ -46,7 +46,10 @@ func (c *UnsetCommand) Arguments() []command.Argument {
 }
 
 func (c *UnsetCommand) AutocompleteFlags() complete.Flags {
-	return complete.Flags{}
+	return command.MergeAutocompleteFlags(
+		c.Meta.AutocompleteFlags(command.FlagSetClient),
+		complete.Flags{},
+	)
 }
 
 func (c *UnsetCommand) AutocompleteArgs() complete.Predictor {

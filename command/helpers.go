@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 	"time"
@@ -20,34 +19,34 @@ import (
 // maxLineLength is the maximum width of any line.
 const maxLineLength int = 78
 
-// formatKV takes a set of strings and formats them into properly
+// FormatKV takes a set of strings and formats them into properly
 // aligned k = v pairs using the columnize library.
-func formatKV(in []string) string {
+func FormatKV(in []string) string {
 	columnConf := columnize.DefaultConfig()
 	columnConf.Empty = "<none>"
 	columnConf.Glue = " = "
 	return columnize.Format(in, columnConf)
 }
 
-// formatList takes a set of strings and formats them into properly
+// FormatList takes a set of strings and formats them into properly
 // aligned output, replacing any blank fields with a placeholder
 // for awk-ability.
-func formatList(in []string) string {
+func FormatList(in []string) string {
 	columnConf := columnize.DefaultConfig()
 	columnConf.Empty = "<none>"
 	return columnize.Format(in, columnConf)
 }
 
-// formatListWithSpaces takes a set of strings and formats them into properly
+// FormatListWithSpaces takes a set of strings and formats them into properly
 // aligned output. It should be used sparingly since it doesn't replace empty
 // values and hence not awk/sed friendly
-func formatListWithSpaces(in []string) string {
+func FormatListWithSpaces(in []string) string {
 	columnConf := columnize.DefaultConfig()
 	return columnize.Format(in, columnConf)
 }
 
-// Limits the length of the string.
-func limit(s string, length int) string {
+// Limit returns a string at the max length specified.
+func Limit(s string, length int) string {
 	if len(s) < length {
 		return s
 	}
@@ -55,9 +54,9 @@ func limit(s string, length int) string {
 	return s[:length]
 }
 
-// wrapAtLengthWithPadding wraps the given text at the maxLineLength, taking
+// WrapAtLengthWithPadding wraps the given text at the maxLineLength, taking
 // into account any provided left padding.
-func wrapAtLengthWithPadding(s string, pad int) string {
+func WrapAtLengthWithPadding(s string, pad int) string {
 	wrapped := text.Wrap(s, maxLineLength-pad)
 	lines := strings.Split(wrapped, "\n")
 	for i, line := range lines {
@@ -66,13 +65,13 @@ func wrapAtLengthWithPadding(s string, pad int) string {
 	return strings.Join(lines, "\n")
 }
 
-// wrapAtLength wraps the given text to maxLineLength.
-func wrapAtLength(s string) string {
-	return wrapAtLengthWithPadding(s, 0)
+// WrapAtLength wraps the given text to maxLineLength.
+func WrapAtLength(s string) string {
+	return WrapAtLengthWithPadding(s, 0)
 }
 
 // formatTime formats the time to string based on RFC822
-func formatTime(t time.Time) string {
+func FormatTime(t time.Time) string {
 	if t.Unix() < 1 {
 		// It's more confusing to display the UNIX epoch or a zero value than nothing
 		return ""
@@ -82,21 +81,21 @@ func formatTime(t time.Time) string {
 }
 
 // formatUnixNanoTime is a helper for formatting time for output.
-func formatUnixNanoTime(nano int64) string {
+func FormatUnixNanoTime(nano int64) string {
 	t := time.Unix(0, nano)
-	return formatTime(t)
+	return FormatTime(t)
 }
 
 // formatTimeDifference takes two times and determines their duration difference
 // truncating to a passed unit.
 // E.g. formatTimeDifference(first=1m22s33ms, second=1m28s55ms, time.Second) -> 6s
-func formatTimeDifference(first, second time.Time, d time.Duration) string {
+func FormatTimeDifference(first, second time.Time, d time.Duration) string {
 	return second.Truncate(d).Sub(first.Truncate(d)).String()
 }
 
 // fmtInt formats v into the tail of buf.
 // It returns the index where the output begins.
-func fmtInt(buf []byte, v uint64) int {
+func FmtInt(buf []byte, v uint64) int {
 	w := len(buf)
 	for v > 0 {
 		w--
@@ -106,12 +105,12 @@ func fmtInt(buf []byte, v uint64) int {
 	return w
 }
 
-// prettyTimeDiff prints a human readable time difference.
+// PrettyTimeDiff prints a human readable time difference.
 // It uses abbreviated forms for each period - s for seconds, m for minutes, h for hours,
 // d for days, mo for months, and y for years. Time difference is rounded to the nearest second,
 // and the top two least granular periods are returned. For example, if the time difference
 // is 10 months, 12 days, 3 hours and 2 seconds, the string "10mo12d" is returned. Zero values return the empty string
-func prettyTimeDiff(first, second time.Time) string {
+func PrettyTimeDiff(first, second time.Time) string {
 	// handle zero values
 	if first.IsZero() || first.UnixNano() == 0 {
 		return ""
@@ -143,7 +142,7 @@ func prettyTimeDiff(first, second time.Time) string {
 		w--
 		buf[w] = 's'
 		// u is now seconds
-		w = fmtInt(buf[:w], secs)
+		w = FmtInt(buf[:w], secs)
 		indexes = append(indexes, w)
 	}
 	u /= 60
@@ -153,7 +152,7 @@ func prettyTimeDiff(first, second time.Time) string {
 		if mins > 0 {
 			w--
 			buf[w] = 'm'
-			w = fmtInt(buf[:w], mins)
+			w = FmtInt(buf[:w], mins)
 			indexes = append(indexes, w)
 		}
 		u /= 60
@@ -163,7 +162,7 @@ func prettyTimeDiff(first, second time.Time) string {
 			if hrs > 0 {
 				w--
 				buf[w] = 'h'
-				w = fmtInt(buf[:w], hrs)
+				w = FmtInt(buf[:w], hrs)
 				indexes = append(indexes, w)
 			}
 			u /= 24
@@ -174,7 +173,7 @@ func prettyTimeDiff(first, second time.Time) string {
 			if days > 0 {
 				w--
 				buf[w] = 'd'
-				w = fmtInt(buf[:w], days)
+				w = FmtInt(buf[:w], days)
 				indexes = append(indexes, w)
 			}
 			u /= 30
@@ -187,7 +186,7 @@ func prettyTimeDiff(first, second time.Time) string {
 				buf[w] = 'o'
 				w--
 				buf[w] = 'm'
-				w = fmtInt(buf[:w], months)
+				w = FmtInt(buf[:w], months)
 				indexes = append(indexes, w)
 			}
 			u /= 12
@@ -196,7 +195,7 @@ func prettyTimeDiff(first, second time.Time) string {
 		if u > 0 {
 			w--
 			buf[w] = 'y'
-			w = fmtInt(buf[:w], u)
+			w = FmtInt(buf[:w], u)
 			indexes = append(indexes, w)
 		}
 	}
@@ -216,129 +215,8 @@ func prettyTimeDiff(first, second time.Time) string {
 
 }
 
-// LineLimitReader wraps another reader and provides `tail -n` like behavior.
-// LineLimitReader buffers up to the searchLimit and returns `-n` number of
-// lines. After those lines have been returned, LineLimitReader streams the
-// underlying ReadCloser
-type LineLimitReader struct {
-	io.ReadCloser
-	lines       int
-	searchLimit int
-
-	timeLimit time.Duration
-	lastRead  time.Time
-
-	buffer     *bytes.Buffer
-	bufFiled   bool
-	foundLines bool
-}
-
-// NewLineLimitReader takes the ReadCloser to wrap, the number of lines to find
-// searching backwards in the first searchLimit bytes. timeLimit can optionally
-// be specified by passing a non-zero duration. When set, the search for the
-// last n lines is aborted if no data has been read in the duration. This
-// can be used to flush what is had if no extra data is being received. When
-// used, the underlying reader must not block forever and must periodically
-// unblock even when no data has been read.
-func NewLineLimitReader(r io.ReadCloser, lines, searchLimit int, timeLimit time.Duration) *LineLimitReader {
-	return &LineLimitReader{
-		ReadCloser:  r,
-		searchLimit: searchLimit,
-		timeLimit:   timeLimit,
-		lines:       lines,
-		buffer:      bytes.NewBuffer(make([]byte, 0, searchLimit)),
-	}
-}
-
-func (l *LineLimitReader) Read(p []byte) (n int, err error) {
-	// Fill up the buffer so we can find the correct number of lines.
-	if !l.bufFiled {
-		b := make([]byte, len(p))
-		n, err := l.ReadCloser.Read(b)
-		if n > 0 {
-			if _, err := l.buffer.Write(b[:n]); err != nil {
-				return 0, err
-			}
-		}
-
-		if err != nil {
-			if err != io.EOF {
-				return 0, err
-			}
-
-			l.bufFiled = true
-			goto READ
-		}
-
-		if l.buffer.Len() >= l.searchLimit {
-			l.bufFiled = true
-			goto READ
-		}
-
-		if l.timeLimit.Nanoseconds() > 0 {
-			if l.lastRead.IsZero() {
-				l.lastRead = time.Now()
-				return 0, nil
-			}
-
-			now := time.Now()
-			if n == 0 {
-				// We hit the limit
-				if l.lastRead.Add(l.timeLimit).Before(now) {
-					l.bufFiled = true
-					goto READ
-				} else {
-					return 0, nil
-				}
-			} else {
-				l.lastRead = now
-			}
-		}
-
-		return 0, nil
-	}
-
-READ:
-	if l.bufFiled && l.buffer.Len() != 0 {
-		b := l.buffer.Bytes()
-
-		// Find the lines
-		if !l.foundLines {
-			found := 0
-			i := len(b) - 1
-			sep := byte('\n')
-			lastIndex := len(b) - 1
-			for ; found < l.lines && i >= 0; i-- {
-				if b[i] == sep {
-					lastIndex = i
-
-					// Skip the first one
-					if i != len(b)-1 {
-						found++
-					}
-				}
-			}
-
-			// We found them all
-			if found == l.lines {
-				// Clear the buffer until the last index
-				l.buffer.Next(lastIndex + 1)
-			}
-
-			l.foundLines = true
-		}
-
-		// Read from the buffer
-		n := copy(p, l.buffer.Next(len(p)))
-		return n, nil
-	}
-
-	// Just stream from the underlying reader now
-	return l.ReadCloser.Read(p)
-}
-
-// mergeAutocompleteFlags is used to join multiple flag completion sets.
-func mergeAutocompleteFlags(flags ...complete.Flags) complete.Flags {
+// MergeAutocompleteFlags is used to join multiple flag completion sets.
+func MergeAutocompleteFlags(flags ...complete.Flags) complete.Flags {
 	merged := make(map[string]complete.Predictor, len(flags))
 	for _, f := range flags {
 		for k, v := range f {
@@ -348,17 +226,7 @@ func mergeAutocompleteFlags(flags ...complete.Flags) complete.Flags {
 	return merged
 }
 
-// sanitizeUUIDPrefix is used to sanitize a UUID prefix. The returned result
-// will be a truncated version of the prefix if the prefix would not be
-// queryable.
-func sanitizeUUIDPrefix(prefix string) string {
-	hyphens := strings.Count(prefix, "-")
-	length := len(prefix) - hyphens
-	remainder := length % 2
-	return prefix[:len(prefix)-remainder]
-}
-
-// commandErrorText is used to easily render the same messaging across commads
+// CommandErrorText is used to easily render the same messaging across commads
 // when an error is printed.
 func CommandErrorText(cmd NamedCommand) string {
 	appName := os.Getenv("CLI_APP_NAME")
@@ -406,7 +274,7 @@ func (w *uiErrorWriter) Close() error {
 	return nil
 }
 
-func prettyPrint(i interface{}) string {
+func PrettyPrint(i interface{}) string {
 	s, _ := json.MarshalIndent(i, "", "\t")
 	return string(s)
 }
