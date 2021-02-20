@@ -1,6 +1,6 @@
 NAME = netrc
-EMAIL = netrc@josediazgonzalez.com
-MAINTAINER = josegonzalez
+EMAIL = dokku@josediazgonzalez.com
+MAINTAINER = dokku
 MAINTAINER_NAME = Jose Diaz-Gonzalez
 REPOSITORY = go-netrc
 HARDWARE = $(shell uname -m)
