@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"netrc/command"
-	netrc_vendor "netrc/netrc-vendor"
 
+	"github.com/jdxcode/netrc"
 	"github.com/posener/complete"
 )
 
@@ -98,7 +98,7 @@ func (c *UnsetCommand) Run(args []string) int {
 		return 1
 	}
 
-	n, err := netrc_vendor.Parse(filepath.Join(usr.HomeDir, ".netrc"))
+	n, err := netrc.Parse(filepath.Join(usr.HomeDir, ".netrc"))
 	if err != nil {
 		c.Ui.Error(err.Error())
 		return 1

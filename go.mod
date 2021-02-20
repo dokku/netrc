@@ -3,6 +3,7 @@ module netrc
 go 1.15
 
 require (
+	github.com/jdxcode/netrc v0.0.0-20210204082910-926c7f70242a
 	github.com/kr/text v0.1.0
 	github.com/mattn/go-colorable v0.1.8
 	github.com/mitchellh/cli v1.1.2
