@@ -38,7 +38,10 @@ func (c *VersionCommand) Arguments() []command.Argument {
 }
 
 func (c *VersionCommand) AutocompleteFlags() complete.Flags {
-	return complete.Flags{}
+	return command.MergeAutocompleteFlags(
+		c.Meta.AutocompleteFlags(command.FlagSetClient),
+		complete.Flags{},
+	)
 }
 
 func (c *VersionCommand) AutocompleteArgs() complete.Predictor {

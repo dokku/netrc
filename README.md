@@ -13,5 +13,9 @@ Available commands are:
     get      Get an entry from the .netrc file
     set      Set an entry in the .netrc file
     unset    Unset an entry from the .netrc file
-    version    Return the version of the binary
+    version  Return the version of the binary
 ```
+
+## Releases
+
+Anybody can propose a release. First bump the version in `Makefile`, make sure `CHANGELOG.md` is up to date, and make sure tests are passing. Then open a Pull Request from `master` into the `release` branch. Once a maintainer approves and merges, Github Actions will build a release and upload it to Github.

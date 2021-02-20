@@ -1,11 +1,11 @@
 NAME = netrc
-EMAIL = netrc@josediazgonzalez.com
-MAINTAINER = josegonzalez
+EMAIL = dokku@josediazgonzalez.com
+MAINTAINER = dokku
 MAINTAINER_NAME = Jose Diaz-Gonzalez
 REPOSITORY = go-netrc
 HARDWARE = $(shell uname -m)
 SYSTEM_NAME  = $(shell uname -s | tr '[:upper:]' '[:lower:]')
-BASE_VERSION ?= 0.1.0
+BASE_VERSION ?= 0.2.0
 IMAGE_NAME ?= $(MAINTAINER)/$(REPOSITORY)
 PACKAGECLOUD_REPOSITORY ?= dokku/dokku-betafish
 
@@ -55,6 +55,7 @@ $(targets): %-in-docker: .env.docker
 		--rm \
 		--volume /var/lib/docker:/var/lib/docker \
 		--volume /var/run/docker.sock:/var/run/docker.sock:ro \
+		--volume /usr/bin/docker:/usr/local/bin/docker \
 		--volume ${PWD}:/src/github.com/$(MAINTAINER)/$(REPOSITORY) \
 		--workdir /src/github.com/$(MAINTAINER)/$(REPOSITORY) \
 		$(IMAGE_NAME):build make -e $(@:-in-docker=)
@@ -124,7 +125,7 @@ docker-image:
 
 bin/gh-release:
 	mkdir -p bin
-	curl -o bin/gh-release.tgz -sL https://github.com/progrium/gh-release/releases/download/v2.2.1/gh-release_2.2.1_$(SYSTEM_NAME)_$(HARDWARE).tgz
+	curl -o bin/gh-release.tgz -sL https://github.com/progrium/gh-release/releases/download/v2.3.0/gh-release_2.3.0_$(SYSTEM_NAME)_$(HARDWARE).tgz
 	tar xf bin/gh-release.tgz -C bin
 	chmod +x bin/gh-release
 

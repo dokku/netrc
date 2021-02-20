@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"netrc/command"
-	netrc_vendor "netrc/netrc-vendor"
 
+	"github.com/jdxcode/netrc"
 	"github.com/posener/complete"
 )
 
@@ -46,7 +46,10 @@ func (c *GetCommand) Arguments() []command.Argument {
 }
 
 func (c *GetCommand) AutocompleteFlags() complete.Flags {
-	return complete.Flags{}
+	return command.MergeAutocompleteFlags(
+		c.Meta.AutocompleteFlags(command.FlagSetClient),
+		complete.Flags{},
+	)
 }
 
 func (c *GetCommand) AutocompleteArgs() complete.Predictor {
@@ -98,7 +101,7 @@ func (c *GetCommand) Run(args []string) int {
 		return 1
 	}
 
-	n, err := netrc_vendor.Parse(filepath.Join(usr.HomeDir, ".netrc"))
+	n, err := netrc.Parse(filepath.Join(usr.HomeDir, ".netrc"))
 	if err != nil {
 		c.Ui.Error(err.Error())
 		return 1
