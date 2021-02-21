@@ -25,6 +25,8 @@ github.com/jdxcode/netrc v0.0.0-20210204082910-926c7f70242a h1:d4+I1YEKVmWZrgkt6
 github.com/jdxcode/netrc v0.0.0-20210204082910-926c7f70242a/go.mod h1:Zi/ZFkEqFHTm7qkjyNJjaWH4LQA9LQhGJyF0lTYGpxw=
 github.com/josegonzalez/cli-skeleton v0.1.1 h1:MpqPid1g1PgE3lxyQB4QC29ES3MClBZNhDVSJkoesVc=
 github.com/josegonzalez/cli-skeleton v0.1.1/go.mod h1:pNBybtIE54KcK5IyjVzYoMcPVmIjd+ON02WsrEI4vb0=
+github.com/josegonzalez/cli-skeleton v0.2.0 h1:cCWlMLn7/mRi6Ht7aTi33hZpaxKoW052vQ5kXBVRNkg=
+github.com/josegonzalez/cli-skeleton v0.2.0/go.mod h1:pNBybtIE54KcK5IyjVzYoMcPVmIjd+ON02WsrEI4vb0=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=

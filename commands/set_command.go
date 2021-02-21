@@ -96,6 +96,7 @@ func (c *SetCommand) Run(args []string) int {
 	name := arguments["name"].StringValue()
 	login := arguments["login"].StringValue()
 	password := arguments["password"].StringValue()
+	account := arguments["account"].StringValue()
 
 	usr, err := user.Current()
 	if err != nil {
@@ -115,6 +116,10 @@ func (c *SetCommand) Run(args []string) int {
 	} else {
 		machine.Set("login", login)
 		machine.Set("password", password)
+	}
+
+	if account != "" {
+		machine.Set("account", account)
 	}
 
 	if err := n.Save(); err != nil {
