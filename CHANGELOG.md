@@ -1,3 +1,18 @@
+## [0.3.0](https://github.com/dokku/netrc/compare/v0.2.2...v0.3.0) - 2021-02-21
+
+### Changes
+
+- @josegonzalez Exit 0 if unset will be a no-op CI #34
+- @josegonzalez Rename project to netrc
+
+### Docs
+
+- @josegonzalez Add documentation for releases
+
+### Tests
+
+- @josegonzalez Add integration tests via bats
+
 ## [0.2.2](https://github.com/dokku/netrc/compare/v0.2.1...v0.2.2) - 2021-02-20
 
 ### Fixes
