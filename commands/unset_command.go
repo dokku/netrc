@@ -94,8 +94,7 @@ func (c *UnsetCommand) Run(args []string) int {
 
 	machine := n.Machine(name)
 	if machine == nil {
-		c.Ui.Error(fmt.Sprintf("Invalid machine '%v' specified", name))
-		return 1
+		return 0
 	}
 
 	n.RemoveMachine(name)

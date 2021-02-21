@@ -2,6 +2,12 @@
 
 Utility that allows users to manage netrc files.
 
+## Downloading
+
+See Github Releases for prebuilt Linux and MacOS binaries, as well as Debian and RPM packages.
+
+OS packages are also available via https://packagecloud.io/dokku/dokku.
+
 ## Usage
 
 > Warning: Macro setting is currently unhandled
