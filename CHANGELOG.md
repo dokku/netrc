@@ -1,3 +1,9 @@
+## [0.3.1](https://github.com/dokku/netrc/compare/v0.3.0...v0.3.1) - 2021-03-04
+
+### Fixes
+
+- @josegonzalez Create .netrc file if it does not exist
+
 ## [0.3.0](https://github.com/dokku/netrc/compare/v0.2.2...v0.3.0) - 2021-02-21
 
 ### Changes

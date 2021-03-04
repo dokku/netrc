@@ -24,6 +24,24 @@ teardown() {
   assert_success
 }
 
+@test "(get) no netrc" {
+  run test -f "$HOME/.netrc"
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+
+  run $NETRC_BIN get invalid
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+  assert_output_contains "Invalid machine 'invalid' specified"
+
+  run test -f "$HOME/.netrc"
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+}
+
 @test "(get) empty netrc" {
   run $NETRC_BIN get
   echo "output: $output"
@@ -66,6 +84,30 @@ teardown() {
   echo "status: $status"
   assert_failure
   assert_output_contains "Invalid machine 'invalid' specified"
+}
+
+@test "(set) no netrc" {
+  run test -f "$HOME/.netrc"
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+
+  run $NETRC_BIN set github.com username password
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_not_exists
+
+  run cat "$HOME/.netrc"
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output "$(cat fixtures/empty/github.netrc)"
+
+  run test -f "$HOME/.netrc"
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
 }
 
 @test "(set) empty netrc" {
@@ -152,6 +194,29 @@ teardown() {
   echo "status: $status"
   assert_success
   assert_output "$(cat fixtures/valid/github-account.netrc)"
+}
+
+@test "(unset) no netrc" {
+  run test -f "$HOME/.netrc"
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+
+  run $NETRC_BIN unset github.com
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+
+  run cat "$HOME/.netrc"
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output "$(cat fixtures/empty/.netrc)"
+
+  run test -f "$HOME/.netrc"
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
 }
 
 @test "(unset) empty netrc" {

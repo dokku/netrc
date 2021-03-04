@@ -86,7 +86,20 @@ func (c *UnsetCommand) Run(args []string) int {
 		return 1
 	}
 
-	n, err := netrc.Parse(filepath.Join(usr.HomeDir, ".netrc"))
+	netrcFile := filepath.Join(usr.HomeDir, ".netrc")
+	if _, err := os.Stat(netrcFile); os.IsNotExist(err) {
+		file, err := os.OpenFile(netrcFile, os.O_RDONLY|os.O_CREATE, 0600)
+		if err != nil {
+			c.Ui.Error(err.Error())
+			return 1
+		}
+		if err := file.Close(); err != nil {
+			c.Ui.Error(err.Error())
+			return 1
+		}
+	}
+
+	n, err := netrc.Parse(netrcFile)
 	if err != nil {
 		c.Ui.Error(err.Error())
 		return 1
