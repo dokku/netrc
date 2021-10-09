@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 export SYSTEM_NAME="$(uname -s | tr '[:upper:]' '[:lower:]')"
-export NETRC_BIN="build/$SYSTEM_NAME/netrc"
+export NETRC_BIN="build/$SYSTEM_NAME/netrc-amd64"
 
 setup() {
   touch "$HOME/.netrc"
