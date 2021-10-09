@@ -42,7 +42,8 @@ targets = $(addsuffix -in-docker, $(LIST))
 
 build: prebuild
 	@$(MAKE) build/darwin/$(NAME)
-	@$(MAKE) build/linux/$(NAME)
+	@$(MAKE) build/linux/$(NAME)-amd64
+	@$(MAKE) build/linux/$(NAME)-armhf
 	@$(MAKE) build/deb/$(NAME)_$(VERSION)_amd64.deb
 	@$(MAKE) build/deb/$(NAME)_$(VERSION)_armhf.deb
 	@$(MAKE) build/rpm/$(NAME)-$(VERSION)-1.x86_64.rpm
@@ -119,7 +120,7 @@ build/deb/$(NAME)_$(VERSION)_armhf.deb: build/linux/$(NAME)-armhf
 		build/linux/$(NAME)=/usr/bin/$(NAME)-armhf \
 		LICENSE=/usr/share/doc/$(NAME)/copyright
 
-build/rpm/$(NAME)-$(VERSION)-1.x86_64.rpm: build/linux/$(NAME)
+build/rpm/$(NAME)-$(VERSION)-1.x86_64.rpm: build/linux/$(NAME)-amd64
 	export SOURCE_DATE_EPOCH=$(shell git log -1 --format=%ct) \
 		&& mkdir -p build/rpm \
 		&& fpm \
@@ -137,7 +138,7 @@ build/rpm/$(NAME)-$(VERSION)-1.x86_64.rpm: build/linux/$(NAME)
 		--vendor "" \
 		--version $(VERSION) \
 		--verbose \
-		build/linux/$(NAME)=/usr/bin/$(NAME) \
+		build/linux/$(NAME)=/usr/bin/$(NAME)-amd64 \
 		LICENSE=/usr/share/doc/$(NAME)/copyright
 
 clean:
