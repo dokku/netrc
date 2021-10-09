@@ -1,3 +1,10 @@
+## [0.3.2](https://github.com/dokku/netrc/compare/v0.3.1...v0.3.2) - 2021-10-09
+
+### Added
+
+- #7 @adam12 Add bullseye to deb release task
+- #8 @josegonzalez Add support for raspberry pi
+
 ## [0.3.1](https://github.com/dokku/netrc/compare/v0.3.0...v0.3.1) - 2021-03-04
 
 ### Fixes
