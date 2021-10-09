@@ -97,7 +97,7 @@ build/deb/$(NAME)_$(VERSION)_amd64.deb: build/linux/$(NAME)-amd64
 		--vendor "" \
 		--version $(VERSION) \
 		--verbose \
-		build/linux/$(NAME)=/usr/bin/$(NAME)-amd64 \
+		build/linux/$(NAME)-amd64=/usr/bin/$(NAME) \
 		LICENSE=/usr/share/doc/$(NAME)/copyright
 
 build/deb/$(NAME)_$(VERSION)_armhf.deb: build/linux/$(NAME)-armhf
@@ -117,7 +117,7 @@ build/deb/$(NAME)_$(VERSION)_armhf.deb: build/linux/$(NAME)-armhf
 		--vendor "" \
 		--version $(VERSION) \
 		--verbose \
-		build/linux/$(NAME)=/usr/bin/$(NAME)-armhf \
+		build/linux/$(NAME)-armhf=/usr/bin/$(NAME) \
 		LICENSE=/usr/share/doc/$(NAME)/copyright
 
 build/rpm/$(NAME)-$(VERSION)-1.x86_64.rpm: build/linux/$(NAME)-amd64
@@ -138,7 +138,7 @@ build/rpm/$(NAME)-$(VERSION)-1.x86_64.rpm: build/linux/$(NAME)-amd64
 		--vendor "" \
 		--version $(VERSION) \
 		--verbose \
-		build/linux/$(NAME)=/usr/bin/$(NAME)-amd64 \
+		build/linux/$(NAME)-amd64=/usr/bin/$(NAME) \
 		LICENSE=/usr/share/doc/$(NAME)/copyright
 
 clean:
