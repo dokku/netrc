@@ -19,10 +19,10 @@ func main() {
 
 // Executes the specified command
 func Run(args []string) int {
-	commandMeta, ui := command.SetupRun(AppName, Version, args)
+	commandMeta := command.SetupRun(AppName, Version, args)
 	c := cli.NewCLI(AppName, Version)
 	c.Args = os.Args[1:]
-	c.Commands = command.Commands(commandMeta, ui, Commands)
+	c.Commands = command.Commands(commandMeta, Commands)
 	exitCode, err := c.Run()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error executing CLI: %s\n", err.Error())
