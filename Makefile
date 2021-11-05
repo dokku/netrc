@@ -1,11 +1,11 @@
 NAME = netrc
-EMAIL = dokku@josediazgonzalez.com
+EMAIL = netrc@josediazgonzalez.com
 MAINTAINER = dokku
 MAINTAINER_NAME = Jose Diaz-Gonzalez
 REPOSITORY = netrc
 HARDWARE = $(shell uname -m)
 SYSTEM_NAME  = $(shell uname -s | tr '[:upper:]' '[:lower:]')
-BASE_VERSION ?= 0.4.0
+BASE_VERSION ?= 0.4.1
 IMAGE_NAME ?= $(MAINTAINER)/$(REPOSITORY)
 PACKAGECLOUD_REPOSITORY ?= dokku/dokku-betafish
 
