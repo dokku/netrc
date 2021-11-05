@@ -1,5 +1,5 @@
 NAME = netrc
-EMAIL = dokku@josediazgonzalez.com
+EMAIL = netrc@josediazgonzalez.com
 MAINTAINER = dokku
 MAINTAINER_NAME = Jose Diaz-Gonzalez
 REPOSITORY = netrc
