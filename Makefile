@@ -43,8 +43,10 @@ targets = $(addsuffix -in-docker, $(LIST))
 build: prebuild
 	@$(MAKE) build/darwin/$(NAME)
 	@$(MAKE) build/linux/$(NAME)-amd64
+	@$(MAKE) build/linux/$(NAME)-arm64
 	@$(MAKE) build/linux/$(NAME)-armhf
 	@$(MAKE) build/deb/$(NAME)_$(VERSION)_amd64.deb
+	@$(MAKE) build/deb/$(NAME)_$(VERSION)_arm64.deb
 	@$(MAKE) build/deb/$(NAME)_$(VERSION)_armhf.deb
 	@$(MAKE) build/rpm/$(NAME)-$(VERSION)-1.x86_64.rpm
 
