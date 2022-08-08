@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/jdxcode/netrc v0.0.0-20210204082910-926c7f70242a
 	github.com/josegonzalez/cli-skeleton v0.5.0
-	github.com/mitchellh/cli v1.1.3
+	github.com/mitchellh/cli v1.1.4
 	github.com/posener/complete v1.2.3
 	github.com/spf13/pflag v1.0.5
 )
