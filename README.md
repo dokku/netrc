@@ -6,13 +6,13 @@ Utility that allows users to manage netrc files.
 
 See Github Releases for prebuilt Linux and MacOS binaries, as well as Debian and RPM packages.
 
-OS packages are also available via https://packagecloud.io/dokku/dokku.
+OS packages are also available via [packagecloud](https://packagecloud.io/dokku/dokku).
 
 ## Usage
 
 > Warning: Macro setting is currently unhandled
 
-```
+```text
 Usage: netrc [--version] [--help] <command> [<args>]
 
 Available commands are:
