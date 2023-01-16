@@ -4,7 +4,7 @@ Utility that allows users to manage netrc files.
 
 ## Downloading
 
-See Github Releases for prebuilt Linux and MacOS binaries, as well as Debian and RPM packages.
+See Github Releases for prebuilt Linux and MacOS binaries, as well as Debian packages.
 
 OS packages are also available via [packagecloud](https://packagecloud.io/dokku/dokku).
 
