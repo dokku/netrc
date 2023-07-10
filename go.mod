@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/jdxcode/netrc v0.0.0-20210204082910-926c7f70242a
-	github.com/josegonzalez/cli-skeleton v0.8.0
+	github.com/josegonzalez/cli-skeleton v0.9.0
 	github.com/mitchellh/cli v1.1.5
 	github.com/posener/complete v1.2.3
 	github.com/spf13/pflag v1.0.5
@@ -30,7 +30,7 @@ require (
 	github.com/rs/zerolog v1.29.1 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
-	golang.org/x/crypto v0.9.0 // indirect
-	golang.org/x/sys v0.8.0 // indirect
-	golang.org/x/term v0.8.0 // indirect
+	golang.org/x/crypto v0.11.0 // indirect
+	golang.org/x/sys v0.10.0 // indirect
+	golang.org/x/term v0.10.0 // indirect
 )
