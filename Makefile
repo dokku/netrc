@@ -5,7 +5,7 @@ MAINTAINER_NAME = Jose Diaz-Gonzalez
 REPOSITORY = netrc
 HARDWARE = $(shell uname -m)
 SYSTEM_NAME  = $(shell uname -s | tr '[:upper:]' '[:lower:]')
-BASE_VERSION ?= 0.7.0
+BASE_VERSION ?= 0.7.1
 IMAGE_NAME ?= $(MAINTAINER)/$(REPOSITORY)
 PACKAGECLOUD_REPOSITORY ?= dokku/dokku-betafish
 
@@ -68,7 +68,7 @@ build/darwin/$(NAME)-amd64:
 	mkdir -p build/darwin
 	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -a -asmflags=-trimpath=/src -gcflags=-trimpath=/src \
 										-ldflags "-s -w -X main.Version=$(VERSION)" \
-										-o build/darwin/$(NAME)
+										-o build/darwin/$(NAME)-amd64
 
 build/darwin/$(NAME)-arm64:
 	mkdir -p build/darwin
