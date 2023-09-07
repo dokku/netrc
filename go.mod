@@ -3,7 +3,7 @@ module netrc
 go 1.19
 
 require (
-	github.com/jdxcode/netrc v0.0.0-20210204082910-926c7f70242a
+	github.com/jdxcode/netrc v1.0.0
 	github.com/josegonzalez/cli-skeleton v0.10.0
 	github.com/mitchellh/cli v1.1.5
 	github.com/posener/complete v1.2.3
