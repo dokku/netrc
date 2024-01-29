@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"netrc/commands"
 	"os"
@@ -19,10 +20,11 @@ func main() {
 
 // Executes the specified command
 func Run(args []string) int {
-	commandMeta := command.SetupRun(AppName, Version, args)
+	ctx := context.Background()
+	commandMeta := command.SetupRun(ctx, AppName, Version, args)
 	c := cli.NewCLI(AppName, Version)
 	c.Args = os.Args[1:]
-	c.Commands = command.Commands(commandMeta, Commands)
+	c.Commands = command.Commands(ctx, commandMeta, Commands)
 	exitCode, err := c.Run()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error executing CLI: %s\n", err.Error())
@@ -33,7 +35,7 @@ func Run(args []string) int {
 }
 
 // Returns a list of implemented commands
-func Commands(meta command.Meta) map[string]cli.CommandFactory {
+func Commands(ctx context.Context, meta command.Meta) map[string]cli.CommandFactory {
 	return map[string]cli.CommandFactory{
 		"set": func() (cli.Command, error) {
 			return &commands.SetCommand{Meta: meta}, nil
