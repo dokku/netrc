@@ -367,6 +367,144 @@ teardown() {
   rm -f "$flag_path" "$env_path"
 }
 
+@test "(list) no netrc" {
+  run test -f "$HOME/.netrc"
+  assert_failure
+
+  run $NETRC_BIN list
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_not_exists
+
+  run test -f "$HOME/.netrc"
+  assert_success
+}
+
+@test "(list) empty netrc" {
+  run cp "fixtures/empty/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN list
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_not_exists
+}
+
+@test "(list) valid netrc" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN list
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output "heroku.com"
+}
+
+@test "(list) --with-fields" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN list --with-fields
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_contains "heroku.com"
+  assert_output_contains "login=username"
+  assert_output_contains "password=longpassword"
+}
+
+@test "(list) --with-fields omits empty account" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN list --with-fields
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  [[ "$output" != *"account="* ]] || flunk "expected no account= field for machine without account"
+}
+
+@test "(list) --format=json default" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN list --format json
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_contains "\"heroku.com\""
+}
+
+@test "(list) --format=json --with-fields" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN list --format json --with-fields
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_contains "\"name\": \"heroku.com\""
+  assert_output_contains "\"login\": \"username\""
+  assert_output_contains "\"password\": \"longpassword\""
+  assert_output_contains "\"account\": \"\""
+}
+
+@test "(list) --format=invalid" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN list --format yaml
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+  assert_output_contains "Invalid format 'yaml' specified"
+}
+
+@test "(list) default block excluded by default" {
+  run cp "fixtures/with-default/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN list
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output "heroku.com"
+}
+
+@test "(list) --include-default includes default block" {
+  run cp "fixtures/with-default/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN list --include-default
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_contains "default"
+  assert_output_contains "heroku.com"
+}
+
+@test "(list) custom path via --netrc-file" {
+  custom="$(mktemp)"
+  cp "fixtures/valid/.netrc" "$custom"
+
+  run test -f "$HOME/.netrc"
+  assert_failure
+
+  run $NETRC_BIN list --netrc-file "$custom"
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output "heroku.com"
+
+  run test -f "$HOME/.netrc"
+  assert_failure
+
+  rm -f "$custom"
+}
+
 # test functions
 flunk() {
   {
