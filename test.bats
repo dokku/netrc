@@ -294,6 +294,79 @@ teardown() {
   assert_success
 }
 
+@test "(get) custom path via --netrc-file" {
+  custom="$(mktemp)"
+  cp "fixtures/valid/.netrc" "$custom"
+
+  run test -f "$HOME/.netrc"
+  assert_failure
+
+  run $NETRC_BIN get heroku.com --netrc-file "$custom"
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_contains "username:longpassword"
+
+  run test -f "$HOME/.netrc"
+  assert_failure
+
+  rm -f "$custom"
+}
+
+@test "(get) custom path via NETRC env var" {
+  custom="$(mktemp)"
+  cp "fixtures/valid/.netrc" "$custom"
+
+  run test -f "$HOME/.netrc"
+  assert_failure
+
+  NETRC="$custom" run $NETRC_BIN get heroku.com
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_contains "username:longpassword"
+
+  run test -f "$HOME/.netrc"
+  assert_failure
+
+  rm -f "$custom"
+}
+
+@test "(set) custom path via --netrc-file" {
+  custom="$(mktemp)"
+  rm -f "$custom"
+
+  run $NETRC_BIN set github.com username password --netrc-file "$custom"
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_not_exists
+
+  run cat "$custom"
+  assert_success
+  assert_output "$(cat fixtures/empty/github.netrc)"
+
+  run test -f "$HOME/.netrc"
+  assert_failure
+
+  rm -f "$custom"
+}
+
+@test "(--netrc-file flag overrides NETRC env var)" {
+  flag_path="$(mktemp)"
+  env_path="$(mktemp)"
+  cp "fixtures/valid/.netrc" "$flag_path"
+  cp "fixtures/empty/.netrc" "$env_path"
+
+  NETRC="$env_path" run $NETRC_BIN get heroku.com --netrc-file "$flag_path"
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_contains "username:longpassword"
+
+  rm -f "$flag_path" "$env_path"
+}
+
 # test functions
 flunk() {
   {
