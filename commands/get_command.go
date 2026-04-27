@@ -3,8 +3,6 @@ package commands
 import (
 	"fmt"
 	"os"
-	"os/user"
-	"path/filepath"
 
 	"github.com/jdxcode/netrc"
 	"github.com/josegonzalez/cli-skeleton/command"
@@ -49,7 +47,9 @@ func (c *GetCommand) Examples() map[string]string {
 }
 
 func (c *GetCommand) FlagSet() *pflag.FlagSet {
-	return c.Meta.FlagSet(c.Name(), command.FlagSetClient)
+	fs := c.Meta.FlagSet(c.Name(), command.FlagSetClient)
+	fs.String("netrc-file", "", "path to the netrc file (overrides $NETRC and ~/.netrc)")
+	return fs
 }
 
 func (c *GetCommand) Name() string {
@@ -80,23 +80,15 @@ func (c *GetCommand) Run(args []string) int {
 
 	name := arguments["name"].StringValue()
 
-	usr, err := user.Current()
+	netrcFlag, _ := flags.GetString("netrc-file")
+	netrcFile, err := resolveNetrcPath(netrcFlag)
 	if err != nil {
 		c.Ui.Error(err.Error())
 		return 1
 	}
-
-	netrcFile := filepath.Join(usr.HomeDir, ".netrc")
-	if _, err := os.Stat(netrcFile); os.IsNotExist(err) {
-		file, err := os.OpenFile(netrcFile, os.O_RDONLY|os.O_CREATE, 0600)
-		if err != nil {
-			c.Ui.Error(err.Error())
-			return 1
-		}
-		if err := file.Close(); err != nil {
-			c.Ui.Error(err.Error())
-			return 1
-		}
+	if err := ensureNetrcExists(netrcFile); err != nil {
+		c.Ui.Error(err.Error())
+		return 1
 	}
 
 	n, err := netrc.Parse(netrcFile)
