@@ -53,6 +53,12 @@ func (c *SetCommand) stdinArguments() []command.Argument {
 	}
 }
 
+func (c *SetCommand) flagArguments() []command.Argument {
+	return []command.Argument{
+		{Name: "name", Optional: false, Type: command.ArgumentString},
+	}
+}
+
 func (c *SetCommand) AutocompleteFlags() complete.Flags {
 	return command.MergeAutocompleteFlags(
 		c.Meta.AutocompleteFlags(command.FlagSetClient),
@@ -67,8 +73,9 @@ func (c *SetCommand) AutocompleteArgs() complete.Predictor {
 func (c *SetCommand) Examples() map[string]string {
 	appName := os.Getenv("CLI_APP_NAME")
 	return map[string]string{
-		"Set an entry in the .netrc file":          fmt.Sprintf("%s %s github.com username password", appName, c.Name()),
+		"Set an entry in the .netrc file":           fmt.Sprintf("%s %s github.com username password", appName, c.Name()),
 		"Set an entry, reading password from stdin": fmt.Sprintf("echo \"$PW\" | %s %s github.com username --stdin", appName, c.Name()),
+		"Rotate the password on an existing entry":  fmt.Sprintf("%s %s github.com --password newpassword", appName, c.Name()),
 	}
 }
 
@@ -76,6 +83,9 @@ func (c *SetCommand) FlagSet() *pflag.FlagSet {
 	fs := c.Meta.FlagSet(c.Name(), command.FlagSetClient)
 	fs.String("netrc-file", "", "path to the netrc file (overrides $NETRC and ~/.netrc)")
 	fs.Bool("stdin", false, "read password from stdin instead of as a positional argument")
+	fs.String("login", "", "set the login field; other fields preserved if the entry exists")
+	fs.String("password", "", "set the password field; other fields preserved if the entry exists")
+	fs.String("account", "", "set the account field; pass an empty string to clear it")
 	return fs
 }
 
@@ -99,9 +109,21 @@ func (c *SetCommand) Run(args []string) int {
 	}
 
 	useStdin, _ := flags.GetBool("stdin")
+	loginChanged := flags.Changed("login")
+	passwordChanged := flags.Changed("password")
+	accountChanged := flags.Changed("account")
+	fieldFlagSet := loginChanged || passwordChanged || accountChanged
+
+	if useStdin && passwordChanged {
+		c.Ui.Error("--stdin and --password are mutually exclusive")
+		return 1
+	}
 
 	argDefs := c.Arguments()
-	if useStdin {
+	switch {
+	case fieldFlagSet:
+		argDefs = c.flagArguments()
+	case useStdin:
 		argDefs = c.stdinArguments()
 	}
 
@@ -112,20 +134,17 @@ func (c *SetCommand) Run(args []string) int {
 		return 1
 	}
 
-	name := arguments["name"].StringValue()
-	login := arguments["login"].StringValue()
-	account := arguments["account"].StringValue()
-
-	var password string
-	if useStdin {
-		password, err = readPasswordFromStdin(os.Stdin)
-		if err != nil {
-			c.Ui.Error(err.Error())
-			return 1
+	positional := func(name string) (string, bool) {
+		if arg, ok := arguments[name]; ok && arg.HasValue {
+			return arg.StringValue(), true
 		}
-	} else {
-		password = arguments["password"].StringValue()
+		return "", false
 	}
+
+	name, _ := positional("name")
+	loginPos, loginPosSet := positional("login")
+	passwordPos, passwordPosSet := positional("password")
+	accountPos, accountPosSet := positional("account")
 
 	netrcFlag, _ := flags.GetString("netrc-file")
 	netrcFile, err := resolveNetrcPath(netrcFlag)
@@ -145,7 +164,56 @@ func (c *SetCommand) Run(args []string) int {
 	}
 
 	machine := n.Machine(name)
+	existingLogin, existingPassword := "", ""
+	if machine != nil {
+		existingLogin = machine.Get("login")
+		existingPassword = machine.Get("password")
+	}
+
+	loginFlag, _ := flags.GetString("login")
+	passwordFlag, _ := flags.GetString("password")
+	accountFlag, _ := flags.GetString("account")
+
+	login := existingLogin
+	switch {
+	case loginChanged:
+		login = loginFlag
+	case loginPosSet:
+		login = loginPos
+	}
+
+	var password string
+	switch {
+	case passwordChanged:
+		password = passwordFlag
+	case useStdin:
+		password, err = readPasswordFromStdin(os.Stdin)
+		if err != nil {
+			c.Ui.Error(err.Error())
+			return 1
+		}
+	case passwordPosSet:
+		password = passwordPos
+	default:
+		password = existingPassword
+	}
+
+	account := ""
+	accountTouched := false
+	switch {
+	case accountChanged:
+		account = accountFlag
+		accountTouched = true
+	case accountPosSet && accountPos != "":
+		account = accountPos
+		accountTouched = true
+	}
+
 	if machine == nil {
+		if login == "" || password == "" {
+			c.Ui.Error(fmt.Sprintf("Cannot create new entry '%s' without login and password", name))
+			return 1
+		}
 		n.AddMachine(name, login, password)
 		machine = n.Machine(name)
 	} else {
@@ -153,7 +221,7 @@ func (c *SetCommand) Run(args []string) int {
 		machine.Set("password", password)
 	}
 
-	if account != "" {
+	if accountTouched {
 		machine.Set("account", account)
 	}
 
