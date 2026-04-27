@@ -18,6 +18,7 @@ Usage: netrc [--version] [--help] <command> [<args>]
 Available commands are:
     get      Get an entry from the .netrc file
     list     List machines in the .netrc file
+    rename   Rename an entry in the .netrc file
     set      Set an entry in the .netrc file
     unset    Unset an entry from the .netrc file
     version  Return the version of the binary
@@ -99,3 +100,23 @@ netrc set github.com --account ""           # clears the account field
 ```
 
 `--password` and `--stdin` are mutually exclusive. Creating a brand-new entry via flag mode requires both `--login` and `--password` (the underlying file format does not round-trip empty values for these fields).
+
+### rename
+
+```text
+netrc rename <old-name> <new-name> [--force] [--netrc-file PATH]
+```
+
+Renames a machine, copying all of its fields (`login`, `password`, `account`) to the new name. This avoids the `unset` + `set` workaround, which forces the caller to know and re-supply every field.
+
+```text
+netrc rename old.example.com new.example.com
+```
+
+The command exits with an error if the source machine does not exist, or if the destination machine already exists. Pass `--force` to overwrite an existing destination; a warning is printed to stderr when this happens so the destructive overwrite is visible.
+
+```text
+netrc rename old.example.com new.example.com --force
+```
+
+When `<old-name>` and `<new-name>` are equal the command is a no-op and the file is left untouched.

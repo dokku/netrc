@@ -46,6 +46,9 @@ func Commands(ctx context.Context, meta command.Meta) map[string]cli.CommandFact
 		"list": func() (cli.Command, error) {
 			return &commands.ListCommand{Meta: meta}, nil
 		},
+		"rename": func() (cli.Command, error) {
+			return &commands.RenameCommand{Meta: meta}, nil
+		},
 		"unset": func() (cli.Command, error) {
 			return &commands.UnsetCommand{Meta: meta}, nil
 		},
