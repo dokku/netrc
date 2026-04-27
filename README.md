@@ -120,3 +120,18 @@ netrc rename old.example.com new.example.com --force
 ```
 
 When `<old-name>` and `<new-name>` are equal the command is a no-op and the file is left untouched.
+
+### default block
+
+`.netrc` supports a `default` block that acts as a fallback for any machine not explicitly listed. All commands accept the literal name `default` as a target, and `list` exposes it via `--include-default`.
+
+```text
+netrc get default
+netrc set default --login user --password pw
+netrc rename default new-name
+netrc rename old-name default
+netrc unset default
+netrc list --include-default
+```
+
+`default` is reserved by the file format and cannot be used as a regular `machine` name; the parser would interpret it as the default block.

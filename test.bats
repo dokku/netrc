@@ -966,7 +966,7 @@ password='longpassword'"
 }
 
 @test "(list) default block excluded by default" {
-  run cp "fixtures/with-default/.netrc" "$HOME/.netrc"
+  run cp "fixtures/mixed/.netrc" "$HOME/.netrc"
   assert_success
 
   run $NETRC_BIN list
@@ -977,7 +977,7 @@ password='longpassword'"
 }
 
 @test "(list) --include-default includes default block" {
-  run cp "fixtures/with-default/.netrc" "$HOME/.netrc"
+  run cp "fixtures/mixed/.netrc" "$HOME/.netrc"
   assert_success
 
   run $NETRC_BIN list --include-default
@@ -1005,6 +1005,349 @@ password='longpassword'"
   assert_failure
 
   rm -f "$custom"
+}
+
+@test "(get) default block" {
+  run cp "fixtures/mixed/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN get default
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output "defaultuser:defaultpass"
+}
+
+@test "(get) default block --field login" {
+  run cp "fixtures/mixed/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN get default --field login
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output "defaultuser"
+}
+
+@test "(get) default block --format json" {
+  run cp "fixtures/default/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN get default --format json
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_contains "\"login\": \"defaultuser\""
+  assert_output_contains "\"password\": \"defaultpass\""
+}
+
+@test "(get) default missing returns error" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN get default
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+  assert_output_contains "Invalid machine 'default' specified"
+}
+
+@test "(set) default block creates new positional" {
+  run cp "fixtures/empty/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN set default user pw
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_not_exists
+
+  run cat "$HOME/.netrc"
+  assert_success
+  assert_output "default
+  login user
+  password pw"
+}
+
+@test "(set) default block creates new with flags" {
+  run cp "fixtures/empty/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN set default --login user --password pw
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_not_exists
+
+  run $NETRC_BIN get default
+  assert_success
+  assert_output "user:pw"
+}
+
+@test "(set) default block prepends to existing machines" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN set default user pw
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+
+  run $NETRC_BIN get default
+  assert_success
+  assert_output "user:pw"
+
+  run $NETRC_BIN get heroku.com
+  assert_success
+  assert_output "username:longpassword"
+}
+
+@test "(set) default block updates existing" {
+  run cp "fixtures/mixed/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN set default --password newpw
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_not_exists
+
+  run $NETRC_BIN get default --field login
+  assert_success
+  assert_output "defaultuser"
+
+  run $NETRC_BIN get default --field password
+  assert_success
+  assert_output "newpw"
+
+  run $NETRC_BIN get heroku.com
+  assert_success
+  assert_output "username:longpassword"
+}
+
+@test "(set) default block --account adds and clears" {
+  run cp "fixtures/default/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN set default --account acct
+  assert_success
+
+  run $NETRC_BIN get default --field account
+  assert_success
+  assert_output "acct"
+
+  run $NETRC_BIN set default --account ""
+  assert_success
+
+  run $NETRC_BIN get default --field account
+  assert_success
+  assert_output ""
+}
+
+@test "(set) default block via stdin" {
+  run cp "fixtures/empty/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run bash -c "echo 'pw' | $NETRC_BIN set default user --stdin"
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+
+  run $NETRC_BIN get default
+  assert_success
+  assert_output "user:pw"
+}
+
+@test "(set) default block create requires login and password" {
+  run cp "fixtures/empty/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN set default --password pw
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+  assert_output_contains "Cannot create new entry 'default' without login and password"
+}
+
+@test "(unset) default block from mixed" {
+  run cp "fixtures/mixed/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN unset default
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+
+  run cat "$HOME/.netrc"
+  assert_success
+  assert_output "$(cat fixtures/valid/.netrc)"
+}
+
+@test "(unset) default block from default-only" {
+  run cp "fixtures/default/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN unset default
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+
+  run cat "$HOME/.netrc"
+  assert_success
+  assert_output ""
+}
+
+@test "(unset) default missing is silent" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN unset default
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_not_exists
+
+  run cat "$HOME/.netrc"
+  assert_success
+  assert_output "$(cat fixtures/valid/.netrc)"
+}
+
+@test "(rename) default to new name" {
+  run cp "fixtures/mixed/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN rename default newhost.com
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+
+  run $NETRC_BIN get newhost.com
+  assert_success
+  assert_output "defaultuser:defaultpass"
+
+  run $NETRC_BIN get default
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+  assert_output_contains "Invalid machine 'default' specified"
+}
+
+@test "(rename) name to default" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN rename heroku.com default
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+
+  run $NETRC_BIN get default
+  assert_success
+  assert_output "username:longpassword"
+
+  run $NETRC_BIN get heroku.com
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+  assert_output_contains "Invalid machine 'heroku.com' specified"
+}
+
+@test "(rename) name to default preserves account" {
+  run cp "fixtures/valid/github-account.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN rename github.com default
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+
+  run $NETRC_BIN get default --field account
+  assert_success
+  assert_output "account"
+}
+
+@test "(rename) name to default conflicts without --force" {
+  run cp "fixtures/mixed/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN rename heroku.com default
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+  assert_output_contains "Machine 'default' already exists, pass --force to overwrite"
+
+  run cat "$HOME/.netrc"
+  assert_success
+  assert_output "$(cat fixtures/mixed/.netrc)"
+}
+
+@test "(rename) name to default --force overwrites and warns" {
+  run cp "fixtures/mixed/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN rename heroku.com default --force
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_contains "Warning: overwriting existing machine 'default'"
+
+  run $NETRC_BIN get default
+  assert_success
+  assert_output "username:longpassword"
+
+  run $NETRC_BIN get heroku.com
+  assert_failure
+  assert_output_contains "Invalid machine 'heroku.com' specified"
+}
+
+@test "(rename) default to existing machine conflicts without --force" {
+  run cp "fixtures/mixed/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN rename default heroku.com
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+  assert_output_contains "Machine 'heroku.com' already exists, pass --force to overwrite"
+}
+
+@test "(rename) default to default no-op" {
+  run cp "fixtures/mixed/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN rename default default
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_not_exists
+
+  run cat "$HOME/.netrc"
+  assert_success
+  assert_output "$(cat fixtures/mixed/.netrc)"
+}
+
+@test "(list) --include-default --format=json --with-fields" {
+  run cp "fixtures/mixed/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN list --include-default --format json --with-fields
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_contains "\"name\": \"default\""
+  assert_output_contains "\"login\": \"defaultuser\""
+  assert_output_contains "\"password\": \"defaultpass\""
+}
+
+@test "(list) --include-default on default-only file" {
+  run cp "fixtures/default/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN list --include-default
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output "default"
 }
 
 # test functions

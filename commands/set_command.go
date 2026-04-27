@@ -163,7 +163,12 @@ func (c *SetCommand) Run(args []string) int {
 		return 1
 	}
 
-	machine := n.Machine(name)
+	var machine *netrc.Machine
+	if name == defaultMachineName {
+		machine = findDefault(n)
+	} else {
+		machine = n.Machine(name)
+	}
 	existingLogin, existingPassword := "", ""
 	if machine != nil {
 		existingLogin = machine.Get("login")
@@ -214,8 +219,18 @@ func (c *SetCommand) Run(args []string) int {
 			c.Ui.Error(fmt.Sprintf("Cannot create new entry '%s' without login and password", name))
 			return 1
 		}
-		n.AddMachine(name, login, password)
-		machine = n.Machine(name)
+		if name == defaultMachineName {
+			n, machine, err = getOrCreateDefault(n)
+			if err != nil {
+				c.Ui.Error(err.Error())
+				return 1
+			}
+			machine.Set("login", login)
+			machine.Set("password", password)
+		} else {
+			n.AddMachine(name, login, password)
+			machine = n.Machine(name)
+		}
 	} else {
 		machine.Set("login", login)
 		machine.Set("password", password)
