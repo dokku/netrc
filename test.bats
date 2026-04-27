@@ -428,6 +428,141 @@ password='longpassword'"
   assert_output "sneaky"
 }
 
+@test "(set) --password updates only password" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN set heroku.com --password newpw
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_not_exists
+
+  run $NETRC_BIN get heroku.com --field login
+  assert_success
+  assert_output "username"
+
+  run $NETRC_BIN get heroku.com --field password
+  assert_success
+  assert_output "newpw"
+}
+
+@test "(set) --login updates only login" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN set heroku.com --login newuser
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_not_exists
+
+  run $NETRC_BIN get heroku.com --field login
+  assert_success
+  assert_output "newuser"
+
+  run $NETRC_BIN get heroku.com --field password
+  assert_success
+  assert_output "longpassword"
+}
+
+@test "(set) --account updates only account" {
+  run cp "fixtures/valid/github-account.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN set github.com --account newacct
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_not_exists
+
+  run $NETRC_BIN get github.com --field login
+  assert_success
+  assert_output "username"
+
+  run $NETRC_BIN get github.com --field password
+  assert_success
+  assert_output "password"
+
+  run $NETRC_BIN get github.com --field account
+  assert_success
+  assert_output "newacct"
+}
+
+@test "(set) --account empty clears account" {
+  run cp "fixtures/valid/github-account.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN set github.com --account ""
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_not_exists
+
+  run $NETRC_BIN get github.com --field account
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output ""
+}
+
+@test "(set) flag mode rejects extra positionals" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN set heroku.com extrauser --login alice
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+  assert_output_contains "This command requires 1 argument"
+}
+
+@test "(set) --password and --stdin are mutually exclusive" {
+  run bash -c "echo 'pw' | $NETRC_BIN set github.com --stdin --password other"
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+  assert_output_contains "--stdin and --password are mutually exclusive"
+}
+
+@test "(set) flag mode rejects new machine with missing login or password" {
+  run cp "fixtures/empty/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN set newhost.com --password pw
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+  assert_output_contains "Cannot create new entry 'newhost.com' without login and password"
+
+  run $NETRC_BIN set newhost.com --login user --password pw
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+
+  run $NETRC_BIN get newhost.com --field login
+  assert_success
+  assert_output "user"
+
+  run $NETRC_BIN get newhost.com --field password
+  assert_success
+  assert_output "pw"
+}
+
+@test "(set) positional regression with no flags still works" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN set github.com username password account
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+
+  run cat "$HOME/.netrc"
+  assert_success
+  assert_output "$(cat fixtures/valid/github-account.netrc)"
+}
+
 @test "(unset) no netrc" {
   run test -f "$HOME/.netrc"
   echo "output: $output"

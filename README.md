@@ -73,6 +73,7 @@ username longpassword
 
 ```text
 netrc set <name> <login> <password> [account] [--netrc-file PATH]
+netrc set <name> [--login VALUE] [--password VALUE] [--account VALUE] [--netrc-file PATH]
 ```
 
 Creates or updates an entry. Passing `account` is optional. With no `--netrc-file` flag, `$NETRC` is consulted, then `~/.netrc`; the file is created with `0600` permissions if it does not exist.
@@ -88,3 +89,13 @@ echo "$PW" | netrc set github.com username --stdin
 ```
 
 With `--stdin`, the password positional is omitted - the form is `netrc set <name> <login> --stdin [account]`. A trailing newline on stdin is stripped; empty stdin is rejected.
+
+To update a single field on an existing entry without re-supplying the others, pass `--login`, `--password`, or `--account`. When any of those flags is supplied, only the machine name is taken positionally and unspecified fields are preserved:
+
+```text
+netrc set github.com --password newpassword
+netrc set github.com --login newuser
+netrc set github.com --account ""           # clears the account field
+```
+
+`--password` and `--stdin` are mutually exclusive. Creating a brand-new entry via flag mode requires both `--login` and `--password` (the underlying file format does not round-trip empty values for these fields).
