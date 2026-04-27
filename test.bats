@@ -86,6 +86,170 @@ teardown() {
   assert_output_contains "Invalid machine 'invalid' specified"
 }
 
+@test "(get) back-compat default output" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN get heroku.com
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output "username:longpassword"
+}
+
+@test "(get) single field" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN get heroku.com --field password
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output "longpassword"
+
+  run $NETRC_BIN get heroku.com --field login
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output "username"
+}
+
+@test "(get) multiple fields text format" {
+  run cp "fixtures/valid/github-account.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN get github.com --field login --field password --field account
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output "login=username
+password=password
+account=account"
+}
+
+@test "(get) field ordering preserved in text" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN get heroku.com --field password --field login
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output "password=longpassword
+login=username"
+}
+
+@test "(get) json format default fields" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN get heroku.com --format json
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_contains "\"login\": \"username\""
+  assert_output_contains "\"password\": \"longpassword\""
+  assert_output_contains "\"account\"" 0
+}
+
+@test "(get) json format with explicit fields" {
+  run cp "fixtures/valid/github-account.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN get github.com --field login --field account --format json
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_contains "\"login\": \"username\""
+  assert_output_contains "\"account\": \"account\""
+  assert_output_contains "\"password\"" 0
+}
+
+@test "(get) json single field is still object" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN get heroku.com --field password --format json
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_contains "{"
+  assert_output_contains "\"password\": \"longpassword\""
+}
+
+@test "(get) shell format default fields" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN get heroku.com --format shell
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output "login='username'
+password='longpassword'"
+
+  unset login password
+  eval "$output"
+  assert_equal "username" "$login"
+  assert_equal "longpassword" "$password"
+}
+
+@test "(get) shell format escapes single quotes" {
+  run $NETRC_BIN set evil.example user "pa'ss"
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+
+  run $NETRC_BIN get evil.example --field password --format shell
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output "password='pa'\\''ss'"
+
+  unset password
+  eval "$output"
+  assert_equal "pa'ss" "$password"
+}
+
+@test "(get) missing field returns empty" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN get heroku.com --field account --format json
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_contains "\"account\": \"\""
+
+  run $NETRC_BIN get heroku.com --field account --format shell
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output "account=''"
+}
+
+@test "(get) invalid format rejected" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN get heroku.com --format yaml
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+  assert_output_contains "Invalid format 'yaml' specified"
+}
+
+@test "(get) invalid field rejected" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN get heroku.com --field bogus
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+  assert_output_contains "Invalid field 'bogus' specified"
+}
+
 @test "(set) no netrc" {
   run test -f "$HOME/.netrc"
   echo "output: $output"

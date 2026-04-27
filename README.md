@@ -22,3 +22,49 @@ Available commands are:
     unset    Unset an entry from the .netrc file
     version  Return the version of the binary
 ```
+
+### get
+
+```text
+netrc get <name> [--field login|password|account ...] [--format=text|json|shell] [--netrc-file PATH]
+```
+
+By default `get` prints `login:password` for back-compatibility:
+
+```console
+$ netrc get github.com
+username:longpassword
+```
+
+Pass `--field` (repeatable) to select specific fields. With a single field, only the value is printed:
+
+```console
+$ netrc get github.com --field password
+longpassword
+```
+
+Multiple `--field` flags emit one `key=value` per line in the order supplied:
+
+```console
+$ netrc get github.com --field login --field password
+login=username
+password=longpassword
+```
+
+Use `--format json` for machine-readable output:
+
+```console
+$ netrc get github.com --field login --field password --format json
+{
+  "login": "username",
+  "password": "longpassword"
+}
+```
+
+Use `--format shell` to emit `eval`-safe assignments (single-quote escaped):
+
+```console
+$ eval "$(netrc get github.com --format shell)"
+$ echo "$login $password"
+username longpassword
+```
