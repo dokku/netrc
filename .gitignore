@@ -20,6 +20,8 @@ release/*
 # Validation output
 validation/*
 
+tmp/
+
 # .env files
 .env*
 
