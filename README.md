@@ -68,3 +68,23 @@ $ eval "$(netrc get github.com --format shell)"
 $ echo "$login $password"
 username longpassword
 ```
+
+### set
+
+```text
+netrc set <name> <login> <password> [account] [--netrc-file PATH]
+```
+
+Creates or updates an entry. Passing `account` is optional. With no `--netrc-file` flag, `$NETRC` is consulted, then `~/.netrc`; the file is created with `0600` permissions if it does not exist.
+
+```console
+$ netrc set github.com username longpassword
+```
+
+Pass `--stdin` to read the password from standard input instead of as a positional argument. This keeps the password out of shell history and `ps` output:
+
+```console
+$ echo "$PW" | netrc set github.com username --stdin
+```
+
+With `--stdin`, the password positional is omitted - the form is `netrc set <name> <login> --stdin [account]`. A trailing newline on stdin is stripped; empty stdin is rejected.

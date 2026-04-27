@@ -360,6 +360,74 @@ password='longpassword'"
   assert_output "$(cat fixtures/valid/github-account.netrc)"
 }
 
+@test "(set) stdin reads password" {
+  run bash -c "echo 'password' | $NETRC_BIN set github.com username --stdin"
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_not_exists
+
+  run cat "$HOME/.netrc"
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output "$(cat fixtures/empty/github.netrc)"
+}
+
+@test "(set) stdin reads password with account" {
+  run bash -c "echo 'password' | $NETRC_BIN set github.com username --stdin account"
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_not_exists
+
+  run cat "$HOME/.netrc"
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output "$(cat fixtures/empty/github-account.netrc)"
+}
+
+@test "(set) stdin requires login" {
+  run bash -c "echo 'password' | $NETRC_BIN set github.com --stdin"
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+  assert_output_contains "This command requires 2"
+}
+
+@test "(set) stdin rejects empty input" {
+  run bash -c "$NETRC_BIN set github.com username --stdin </dev/null"
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+  assert_output_contains "stdin was empty"
+}
+
+@test "(set) stdin strips trailing newline only" {
+  run bash -c "printf 'sneaky' | $NETRC_BIN set example.com user --stdin"
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+
+  run $NETRC_BIN get example.com --field password
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output "sneaky"
+
+  run bash -c "printf 'sneaky\n' | $NETRC_BIN set example.com user --stdin"
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+
+  run $NETRC_BIN get example.com --field password
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output "sneaky"
+}
+
 @test "(unset) no netrc" {
   run test -f "$HOME/.netrc"
   echo "output: $output"
