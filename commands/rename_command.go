@@ -129,9 +129,23 @@ func (c *RenameCommand) Run(args []string) int {
 		n.RemoveMachine(newName)
 	}
 
-	n.AddMachine(newName, login, password)
-	if account != "" {
-		n.Machine(newName).Set("account", account)
+	if newName == defaultMachineName {
+		var dst *netrc.Machine
+		n, dst, err = getOrCreateDefault(n)
+		if err != nil {
+			c.Ui.Error(err.Error())
+			return 1
+		}
+		dst.Set("login", login)
+		dst.Set("password", password)
+		if account != "" {
+			dst.Set("account", account)
+		}
+	} else {
+		n.AddMachine(newName, login, password)
+		if account != "" {
+			n.Machine(newName).Set("account", account)
+		}
 	}
 	n.RemoveMachine(oldName)
 
