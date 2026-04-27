@@ -661,6 +661,141 @@ password='longpassword'"
   assert_success
 }
 
+@test "(rename) preserves login, password, account" {
+  run cp "fixtures/valid/github-account.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN rename github.com gh.example.com
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_not_exists
+
+  run $NETRC_BIN get github.com
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+  assert_output_contains "Invalid machine 'github.com' specified"
+
+  run $NETRC_BIN get gh.example.com --field login
+  assert_success
+  assert_output "username"
+
+  run $NETRC_BIN get gh.example.com --field password
+  assert_success
+  assert_output "password"
+
+  run $NETRC_BIN get gh.example.com --field account
+  assert_success
+  assert_output "account"
+}
+
+@test "(rename) missing source errors" {
+  run cp "fixtures/empty/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN rename ghost.com new.com
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+  assert_output_contains "Invalid machine 'ghost.com' specified"
+}
+
+@test "(rename) destination exists errors without --force" {
+  run cp "fixtures/valid/github.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN rename heroku.com github.com
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+  assert_output_contains "Machine 'github.com' already exists, pass --force to overwrite"
+
+  run cat "$HOME/.netrc"
+  assert_success
+  assert_output "$(cat fixtures/valid/github.netrc)"
+}
+
+@test "(rename) --force overwrites destination and warns" {
+  run cp "fixtures/valid/github.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN rename heroku.com github.com --force
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_contains "Warning: overwriting existing machine 'github.com'"
+
+  run $NETRC_BIN get heroku.com
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+  assert_output_contains "Invalid machine 'heroku.com' specified"
+
+  run $NETRC_BIN get github.com --field login
+  assert_success
+  assert_output "username"
+
+  run $NETRC_BIN get github.com --field password
+  assert_success
+  assert_output "longpassword"
+}
+
+@test "(rename) old equals new is a no-op" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN rename heroku.com heroku.com
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_not_exists
+
+  run cat "$HOME/.netrc"
+  assert_success
+  assert_output "$(cat fixtures/valid/.netrc)"
+}
+
+@test "(rename) custom path via --netrc-file" {
+  custom="$(mktemp)"
+  cp "fixtures/valid/github-account.netrc" "$custom"
+
+  run test -f "$HOME/.netrc"
+  assert_failure
+
+  run $NETRC_BIN rename github.com gh.example.com --netrc-file "$custom"
+  echo "output: $output"
+  echo "status: $status"
+  assert_success
+  assert_output_not_exists
+
+  run $NETRC_BIN get gh.example.com --field account --netrc-file "$custom"
+  assert_success
+  assert_output "account"
+
+  run test -f "$HOME/.netrc"
+  assert_failure
+
+  rm -f "$custom"
+}
+
+@test "(rename) requires both arguments" {
+  run cp "fixtures/valid/.netrc" "$HOME/.netrc"
+  assert_success
+
+  run $NETRC_BIN rename
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+  assert_output_contains "This command requires 2 arguments"
+
+  run $NETRC_BIN rename heroku.com
+  echo "output: $output"
+  echo "status: $status"
+  assert_failure
+  assert_output_contains "This command requires 2 arguments"
+}
+
 @test "(get) custom path via --netrc-file" {
   custom="$(mktemp)"
   cp "fixtures/valid/.netrc" "$custom"
